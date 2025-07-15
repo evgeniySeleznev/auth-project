@@ -62,7 +62,3 @@ message UpdateRequest {
 message DeleteRequest {
   int64 id = 1;
 }
-
-
-
-
