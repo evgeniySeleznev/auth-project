@@ -1,4 +1,4 @@
-module github.com/olezhek28/microservices_course/week_2/config
+module github.com/evgeniySeleznev/auth-project/auth-config
 
 go 1.24.3
 
