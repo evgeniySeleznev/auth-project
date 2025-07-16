@@ -12,3 +12,11 @@ services:
       - "${PG_PORT}:5432"
     volumes:
       - postgres_volume:/b/micro-project/auth/postgres
+
+  migrator-auth:
+    build:
+      context: .
+      dockerfile: migration.Dockerfile
+    restart: on-failure
+    environment:
+      DB_HOST: auth-pg
