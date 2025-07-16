@@ -1,0 +1,20 @@
+volumes:
+  postgres_volume:
+
+services:
+  auth-pg-local:
+    image: postgres:17.5-alpine3.22
+    env_file:
+      - .env
+    ports:
+      - "54321:5432"
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+
+  auth-migrator-local:
+    build:
+      context: .
+      dockerfile: migration.Dockerfile
+    restart: on-failure
+    environment:
+      DB_HOST: auth-pg-local

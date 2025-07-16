@@ -1,4 +1,4 @@
-FROM alpine:3.13
+FROM alpine:3.22.1
 
 RUN apk update && \
     apk upgrade && \
@@ -11,9 +11,11 @@ RUN chmod +x /bin/goose
 WORKDIR /root
 
 ADD migrations/*.sql migrations/
-ADD migration_prod.sh .
-ADD prod.env .
+ADD auth-migration.sh .
+ADD .env .
 
-RUN chmod +x migration_prod.sh
+RUN ls -la /root
 
-ENTRYPOINT ["bash", "migration_prod.sh"]
+RUN chmod +x auth-migration.sh
+
+ENTRYPOINT ["bash", "auth-migration.sh"]

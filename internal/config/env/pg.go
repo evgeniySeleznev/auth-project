@@ -2,7 +2,7 @@ package env
 
 import (
 	"errors"
-	"github.com/olezhek28/microservices_course/week_2/config/internal/config"
+	"github.com/evgeniySeleznev/auth-project/internal/config"
 	"os"
 )
 
