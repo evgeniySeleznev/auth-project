@@ -14,7 +14,7 @@ services:
   auth-migrator-local:
     build:
       context: .
-      dockerfile: migration.Dockerfile
+      dockerfile: auth-migration.Dockerfile
     restart: on-failure
     environment:
       DB_HOST: auth-pg-local
