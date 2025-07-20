@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"github.com/brianvoe/gofakeit"
-	desc "github.com/evgeniySeleznev/auth-project/pkg/auth_v1"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"log"
@@ -12,6 +11,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 
+	"github.com/evgeniySeleznev/auth-project/internal/model"
 	"github.com/evgeniySeleznev/auth-project/internal/repository"
 )
 
@@ -35,21 +35,21 @@ func NewRepository(db *pgxpool.Pool) repository.AuthRepository {
 	return &repo{db: db}
 }
 
-func (r *repo) Create(ctx context.Context, info *desc.User) (int64, error) {
+func (r *repo) Create(ctx context.Context, info *model.User) (int64, error) {
 	_ = ctx // <– подавляем линтер, без логических побочных эффектов
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	// Генерация фейковых данных
-	name := gofakeit.Name()
-	email := gofakeit.Email()
-	password := gofakeit.Password(true, true, true, true, true, 12)
-	role := 1
+	//// Генерация фейковых данных
+	//name := gofakeit.Name()
+	//email := gofakeit.Email()
+	//password := gofakeit.Password(true, true, true, true, true, 12)
+	//role := 1
 
 	//Вставка записи в таблицу users
 	builderInsert := psql.Insert(tableName).
 		Columns(nameColumn, emailColumn, passwordColumn, roleColumn).
-		Values(name, email, password, role).
+		Values(info.Name, info.Email, info.Password, info.Role).
 		Suffix("RETURNING id")
 
 	query, args, err := builderInsert.ToSql()
@@ -63,18 +63,18 @@ func (r *repo) Create(ctx context.Context, info *desc.User) (int64, error) {
 		log.Fatalf("failed to insert user: %v", err)
 	}
 
-	log.Printf("Name: %s, email: %s, pass: %s, role: %v", info.GetName(), info.GetEmail(), info.GetPassword(), info.GetRole())
+	log.Printf("Id: %d, Name: %s, email: %s, pass: %s, role: %v", userID, info.Name, info.Email, info.Password, info.Role)
 
 	return int64(userID), nil
 }
 
-func (r *repo) Get(ctx context.Context, id int64) (*desc.User, error) {
+func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	_ = ctx // <– подавляем линтер, без логических побочных эффектов
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 	// Получение одной обновленной записи
-	builderSelectOne := psql.Select(idColumn, nameColumn, emailColumn, passwordColumn, roleColumn, createdAtColumn, updatedAtColumn).
+	builderSelectOne := psql.Select(nameColumn, emailColumn, passwordColumn, roleColumn, createdAtColumn, updatedAtColumn).
 		From(tableName).
 		Where(sq.Eq{"id": id}).
 		Limit(1)
@@ -84,28 +84,31 @@ func (r *repo) Get(ctx context.Context, id int64) (*desc.User, error) {
 		log.Fatalf("failed to build select-one query: %v", err)
 	}
 
-	var idz, re int
-	var n, e, p string
+	var role int
+	var name, email, password string
 	var createdAt time.Time
 	var updatedAt sql.NullTime
 
-	err = r.db.QueryRow(ctx, query, args...).Scan(&idz, &n, &e, &p, &r, &createdAt, &updatedAt)
+	err = r.db.QueryRow(ctx, query, args...).Scan(&name, &email, &password, &role, &createdAt, &updatedAt)
 	if err != nil {
 		log.Fatalf("failed to select updated user: %v", err)
 	}
 
-	log.Printf("Selected updated user -> id: %d, name: %s, email: %s, password: %s, role: %d, created_at: %v, updated_at: %v",
-		id, n, e, p, re, createdAt, updatedAt)
+	log.Printf("Selected updated user -> name: %s, email: %s, password: %s, role: %d, created_at: %v, updated_at: %v",
+		name, email, password, role, createdAt, updatedAt)
 
-	return &desc.User{
-		Name:  n,
-		Email: e,
-		Role:  desc.Role(re),
+	return &model.User{
+		Name:      name,
+		Email:     email,
+		Password:  password,
+		Role:      model.Role(role),
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
 	}, nil
 }
 
 // Update ...
-func (r *repo) Update(ctx context.Context, info *desc.User) (*emptypb.Empty, error) {
+func (r *repo) Update(ctx context.Context, info *model.User) (*emptypb.Empty, error) {
 	_ = ctx // <– подавляем линтер, без логических побочных эффектов
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
@@ -133,7 +136,7 @@ func (r *repo) Update(ctx context.Context, info *desc.User) (*emptypb.Empty, err
 }
 
 // Delete ...
-func (r *repo) Delete(ctx context.Context, req *desc.User) (*emptypb.Empty, error) {
+func (r *repo) Delete(ctx context.Context, req *model.User) (*emptypb.Empty, error) {
 	_ = ctx // <– подавляем линтер, без логических побочных эффектов
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)

@@ -1,36 +1,24 @@
 package converter
 
 import (
-	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"github.com/olezhek28/microservices_course/week_3/internal/model"
-	desc "github.com/olezhek28/microservices_course/week_3/pkg/note_v1"
+	"github.com/evgeniySeleznev/auth-project/internal/model"
+	desc "github.com/evgeniySeleznev/auth-project/pkg/auth_v1"
 )
 
-func ToNoteFromService(note *model.Note) *desc.Note {
-	var updatedAt *timestamppb.Timestamp
-	if note.UpdatedAt.Valid {
-		updatedAt = timestamppb.New(note.UpdatedAt.Time)
-	}
-
-	return &desc.Note{
-		Id:        note.ID,
-		Info:      ToNoteInfoFromService(note.Info),
-		CreatedAt: timestamppb.New(note.CreatedAt),
-		UpdatedAt: updatedAt,
+func ToDescFromModel(user *model.User) *desc.User {
+	return &desc.User{
+		Name:     user.Name,
+		Email:    user.Email,
+		Password: user.Password,
+		Role:     desc.Role(user.Role), // конвертируем наш Role в protobuf Role
 	}
 }
 
-func ToNoteInfoFromService(info model.NoteInfo) *desc.NoteInfo {
-	return &desc.NoteInfo{
-		Title:   info.Title,
-		Content: info.Content,
-	}
-}
-
-func ToNoteInfoFromDesc(info *desc.NoteInfo) *model.NoteInfo {
-	return &model.NoteInfo{
-		Title:   info.Title,
-		Content: info.Content,
+func ToModelFromDesc(info *desc.CreateRequest) *model.User {
+	return &model.User{
+		Name:     info.Name,
+		Email:    info.Email,
+		Password: info.Password,
+		Role:     model.Role(info.Role),
 	}
 }

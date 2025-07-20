@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 
-	"github.com/olezhek28/microservices_course/week_3/internal/model"
+	"github.com/evgeniySeleznev/auth-project/internal/model"
 )
 
-type NoteService interface {
-	Create(ctx context.Context, info *model.NoteInfo) (int64, error)
-	Get(ctx context.Context, id int64) (*model.Note, error)
+type AuthService interface {
+	Create(ctx context.Context, info *model.User) (int64, error)
+	Get(ctx context.Context, id int64) (*model.User, error)
 }
